@@ -60,8 +60,33 @@ $ npm run dev
 ```
 1.http://localhost:{port}/api/v1/autozen/ ====> Root end point
 2.http://localhost:{port}/api/v1/autozen/user/register ===> Create User
-3.http://localhost:{port}/api/v1/autozen/inspector/register ===> Create inspector
-4.http://localhost:{port}/api/v1/autozen/message/send/:id ===> Send post inspection
+  input {
+    name,
+    email,
+    location, ===> integer only
+    password
+  }
+3.http://localhost:{port}/api/v1/autozen/user/login ===> Login user
+  input {
+    email,
+    password
+  }
+4.http://localhost:{port}/api/v1/autozen/inspector/register ===> Create inspector
+  input {
+    name,
+    email,
+    location, ===> integer only
+    work_type
+  }
+5.http://localhost:{port}/api/v1/autozen/message/send/:id ===> Send post inspection
+  params {
+    id message
+  }
+6.http://localhost:{port}/api/v1/autozen/message/confirm/:inspectorId/:messageId ===> Send confirm inspection
+  params {
+    id inspector,
+    id message
+  }
 ```
 
 ## Structur Folder
