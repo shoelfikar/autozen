@@ -5,6 +5,7 @@ const messageControl = require('../controllers/messages');
 
 Router
   .post('/send/:userId', messageControl.sendMessage)
+  .get('/confirm/:inspectorId/:messageId', messageControl.inspectorConfirm)
 
 
 

@@ -100,6 +100,7 @@ const getMessage = async (req, res) => {
             <p>Inspection Post : ${value.name}</p>
             <p>${messages.dataValues.message}</p>
             <p>Location: ${messages.dataValues.location}</p>
+            <p>Silahkan melakukan konfirmasi jika anda ingin melakukan inspection<a href="http://localhost:4000/api/v1/autozen/message/confirm/${data.dataValues.id}/${messages.dataValues.id}">confirm</a></p>
           `
         }
         const result = sendEmail.sendMail(mailOptions);
@@ -126,46 +127,69 @@ const reSendEmail = async (payload, req, res) => {
           id: payload.messageId
         }
       })
-      const data = await inspector.findOne({
-        where: {
-          id: {
-            [Op.ne]: payload.inspector
-          },
-          location: {
-            [Op.or]: {
-              [Op.eq]: messages.dataValues.location,
-              [Op.lte]: messages.dataValues.location
-            }
-          },
-          availability: 1,
-          rating: {
-            [Op.gt]: 3
-          }
-        }
-      })
-      console.log(data)
-      if (data === null) {
-        const newInspector = await inspector.findOne({
+      if (messages.dataValues.available === 1) {
+        const data = await inspector.findOne({
           where: {
             id: {
               [Op.ne]: payload.inspector
             },
+            location: {
+              [Op.or]: {
+                [Op.eq]: messages.dataValues.location,
+                [Op.lte]: messages.dataValues.location
+              }
+            },
             availability: 1,
             rating: {
-              [Op.gt]: 4
+              [Op.gt]: 3
             }
           }
         })
-        if (newInspector) {
+        if (data === null) {
+          const newInspector = await inspector.findOne({
+            where: {
+              id: {
+                [Op.ne]: payload.inspector
+              },
+              availability: 1,
+              rating: {
+                [Op.gt]: 4
+              }
+            }
+          })
+          if (newInspector) {
+            const mailOptions = {
+              from: process.env.EMAIL,
+              to: newInspector.dataValues.email,
+              subject: 'Inspection Request',
+              html: `
+                <h3>Inspection Request</h3>
+                <p>Inspection Post : ${payload.request}</p>
+                <p>${messages.dataValues.message}</p>
+                <p>Location: ${messages.dataValues.location}</p>
+                <p>Silahkan melakukan konfirmasi jika anda ingin melakukan inspection<a href="http://localhost:4000/api/v1/autozen/message/confirm/${newInspector.dataValues.id}/${messages.dataValues.id}">confirm</a></p>
+              `
+            }
+            const result = sendEmail.sendMail(mailOptions);
+            if(result.error){
+              console.log(new Error('error'));
+            } else {
+              console.log(`data berhasil dikirim!`);
+            }
+          } else {
+            console.log('tidak ada data yang sesuai dengan inspection anda!')
+          }
+        } else {
           const mailOptions = {
             from: process.env.EMAIL,
-            to: newInspector.dataValues.email,
+            to: data.dataValues.email,
             subject: 'Inspection Request',
             html: `
               <h3>Inspection Request</h3>
               <p>Inspection Post : ${payload.request}</p>
               <p>${messages.dataValues.message}</p>
               <p>Location: ${messages.dataValues.location}</p>
+              <p>Silahkan melakukan konfirmasi jika anda ingin melakukan inspection<a href="http://localhost:4000/api/v1/autozen/message/confirm/${data.dataValues.id}/${messages.dataValues.id}">confirm</a></p>
             `
           }
           const result = sendEmail.sendMail(mailOptions);
@@ -174,27 +198,9 @@ const reSendEmail = async (payload, req, res) => {
           } else {
             console.log(`data berhasil dikirim!`);
           }
-        } else {
-          console.log('tidak ada data yang sesuai dengan inspection anda!')
         }
       } else {
-        const mailOptions = {
-          from: process.env.EMAIL,
-          to: data.dataValues.email,
-          subject: 'Inspection Request',
-          html: `
-            <h3>Inspection Request</h3>
-            <p>Inspection Post : ${payload.request}</p>
-            <p>${messages.dataValues.message}</p>
-            <p>Location: ${messages.dataValues.location}</p>
-          `
-        }
-        const result = sendEmail.sendMail(mailOptions);
-        if(result.error){
-          console.log(new Error('error'));
-        } else {
-          console.log(`data berhasil dikirim!`);
-        }
+        console.log('inspection sudah dalam pengerjaan')
       }
     }, 100000)
   } catch (err) {
@@ -204,8 +210,42 @@ const reSendEmail = async (payload, req, res) => {
 
 
 
+const inspectorConfirm = async (req, res) => {
+  try{
+    const inspectorId = req.params.inspectorId
+    const messageId = req.params.messageId
+    const data = await inspector.update({
+      availability: 0,
+      inspection: 1
+    }, 
+      {
+        where: {
+          id: inspectorId
+        }
+    })
+    console.log(data)
+    if (data) {
+      const messages = await sender.update({
+        available: 0,
+        inspector_id: inspectorId
+      },
+      {
+        where: {
+          id: messageId
+        }
+      })
+      helpers.response(res, null, 200, 'Terima kasih telah melakukan konfirmasi, anda sudah dapat melakukan inspection pekerjaan tersebut', null);
+    } else {
+      console.log('data tidak ditemukan, gagal melakukan update')
+    }
+  } catch (err) {
+    helpers.response(res, null, 500, 'Internal server Error', err);
+  }
+}
+
 
 module.exports = {
   sendMessage,
-  getMessage
+  getMessage,
+  inspectorConfirm
 }
