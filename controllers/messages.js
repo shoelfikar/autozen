@@ -78,10 +78,19 @@ const getMessage = async (req, res) => {
               [Op.eq]: value.location,
               [Op.lte]: value.location
             }
+          },
+          availability: 1,
+          rating: {
+            [Op.gt]: 3
           }
         }
       })
       if (data) {
+        const payload = {
+          messageId: value.message_id,
+          inspector: data.dataValues.id,
+          request: value.name
+        }
         const mailOptions = {
           from: process.env.EMAIL,
           to: data.dataValues.email,
@@ -95,12 +104,13 @@ const getMessage = async (req, res) => {
         }
         const result = sendEmail.sendMail(mailOptions);
         if(result.error){
-          console.log(new Error('error'))
+          console.log(new Error('error'));
+        } else {
+          console.log(`data berhasil dikirim!`);
+          reSendEmail(payload);
         }
-        console.log(`data berhasil dikirim!`);
       }
     } catch (err) {
-      console.log(err)
       helpers.response(res, null, 500, 'Internal server Error', err);
     }
   });
@@ -108,13 +118,87 @@ const getMessage = async (req, res) => {
 
 
 
-const reSendEmail = async (req, res) => {
+const reSendEmail = async (payload, req, res) => {
   try{
-    setTimeout(() => {
-      
-    }, 6000)
+    setTimeout(async () => {
+      const messages = await sender.findOne({
+        where: {
+          id: payload.messageId
+        }
+      })
+      const data = await inspector.findOne({
+        where: {
+          id: {
+            [Op.ne]: payload.inspector
+          },
+          location: {
+            [Op.or]: {
+              [Op.eq]: messages.dataValues.location,
+              [Op.lte]: messages.dataValues.location
+            }
+          },
+          availability: 1,
+          rating: {
+            [Op.gt]: 3
+          }
+        }
+      })
+      console.log(data)
+      if (data === null) {
+        const newInspector = await inspector.findOne({
+          where: {
+            id: {
+              [Op.ne]: payload.inspector
+            },
+            availability: 1,
+            rating: {
+              [Op.gt]: 4
+            }
+          }
+        })
+        if (newInspector) {
+          const mailOptions = {
+            from: process.env.EMAIL,
+            to: newInspector.dataValues.email,
+            subject: 'Inspection Request',
+            html: `
+              <h3>Inspection Request</h3>
+              <p>Inspection Post : ${payload.request}</p>
+              <p>${messages.dataValues.message}</p>
+              <p>Location: ${messages.dataValues.location}</p>
+            `
+          }
+          const result = sendEmail.sendMail(mailOptions);
+          if(result.error){
+            console.log(new Error('error'));
+          } else {
+            console.log(`data berhasil dikirim!`);
+          }
+        } else {
+          console.log('tidak ada data yang sesuai dengan inspection anda!')
+        }
+      } else {
+        const mailOptions = {
+          from: process.env.EMAIL,
+          to: data.dataValues.email,
+          subject: 'Inspection Request',
+          html: `
+            <h3>Inspection Request</h3>
+            <p>Inspection Post : ${payload.request}</p>
+            <p>${messages.dataValues.message}</p>
+            <p>Location: ${messages.dataValues.location}</p>
+          `
+        }
+        const result = sendEmail.sendMail(mailOptions);
+        if(result.error){
+          console.log(new Error('error'));
+        } else {
+          console.log(`data berhasil dikirim!`);
+        }
+      }
+    }, 100000)
   } catch (err) {
-
+    helpers.response(res, null, 500, 'Internal server Error', err);
   }
 }
 
