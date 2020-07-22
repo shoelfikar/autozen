@@ -1,4 +1,4 @@
-<h2 align="center">Backend-book-library-expressjs</h2>
+<h2 align="center">Autozen API</h2>
 
 
 
@@ -15,26 +15,24 @@
 
 * [Prerequiste](#Prerequiste)
 * [Installation](#Installation)
-* [Installation](#Installation)
 * [Create Environment Variable](#create-environment-variable)
 * [Start Development Server](#Start-Development-Server)
 * [Link Collection Postman](#Link-Collection-Postman)
 * [Structur Folder](#Structur-Folder)
-* [About Project](#About-Project)
 * [Contributing](#Contributing)
-* [Related Project](#Related-Project)
 * [Contact](#Contact)
 
 ## Prerequiste
 - Node.js - Download and Install [Node.js](https://nodejs.org/en/).
 - MySQL - Download and Install [MySQL](https://www.mysql.com/downloads/) - Make sure it's running on the default port.
-- Redis - Download and Install [Redis](https://redis.io/)
+- Apache Kafka - Download and Install [Apache Kafka](https://kafka.apache.org/)
+- Sequelize - Download and Install [Sequelize](https://sequelize.org/)
 
 ## Installation
 ### Clone
 ```
-$ git clone https://github.com/shoelfikar/Backend-book-library-expressjs.git
-$ cd Backend-book-library-expressjs
+$ git clone https://github.com/shoelfikar/autozen.git
+$ cd autozen
 $ npm install
 ```
 
@@ -58,8 +56,13 @@ EMAIL_PASS = EMAIL_PASS
 ```
 $ npm run dev
 ```
-## Link Collection Postman
-[Postman](https://www.getpostman.com/collections/5a776822917b6c04128a)
+## End Point API
+```
+1.http://localhost:{port}/api/v1/autozen/ ====> Root end point
+2.http://localhost:{port}/api/v1/autozen/user/register ===> Create User
+3.http://localhost:{port}/api/v1/autozen/inspector/register ===> Create inspector
+4.http://localhost:{port}/api/v1/autozen/message/send/:id ===> Send post inspection
+```
 
 ## Structur Folder
 ```
