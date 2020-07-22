@@ -31,8 +31,8 @@
 ## Installation
 ### Clone
 ```
-$ git clone https://github.com/shoelfikar/Backend-book-library-expressjs.git
-$ cd Backend-book-library-expressjs
+$ git clone https://github.com/shoelfikar/autozen.git
+$ cd autozen
 $ npm install
 ```
 
