@@ -17,7 +17,7 @@
 * [Installation](#Installation)
 * [Create Environment Variable](#create-environment-variable)
 * [Start Development Server](#Start-Development-Server)
-* [Link Collection Postman](#Link-Collection-Postman)
+* [End Point API](#End-Point-API)
 * [Structur Folder](#Structur-Folder)
 * [Contributing](#Contributing)
 * [Contact](#Contact)
